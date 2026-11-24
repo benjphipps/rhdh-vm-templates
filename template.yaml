@@ -1,8 +1,8 @@
 apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
-  name: provision-rhel9-vm-own-repo
-  title: Provision RHEL 9 VM (my GitHub repository)
+  name: provision-rhel9-vm
+  title: Provision RHEL 9 VM
   description: Create a VM GitOps repository owned by you and request approval to deploy it
   tags: [openshift, virtualization, gitops, vm]
 spec:
