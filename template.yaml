@@ -1,0 +1,87 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: provision-rhel9-vm-own-repo
+  title: Provision RHEL 9 VM (my GitHub repository)
+  description: Create a VM GitOps repository owned by you and request approval to deploy it
+  tags: [openshift, virtualization, gitops, vm]
+spec:
+  owner: user:default/benjphipps
+  type: service
+  parameters:
+    - title: VM details and GitHub destination
+      required: [vmName, sshPublicKey, repoUrl]
+      properties:
+        vmName:
+          title: Globally unique VM name
+          type: string
+          description: Use a unique name across demo-vms, e.g. alice-rhel9-01
+          pattern: '^[a-z][a-z0-9-]{1,30}[a-z0-9]$'
+        sshPublicKey:
+          title: SSH public key (not private key)
+          type: string
+          pattern: '^ssh-(ed25519|rsa) [A-Za-z0-9+/=]+( [A-Za-z0-9_.@-]+)?$'
+        repoUrl:
+          title: Your new VM GitHub repository
+          type: string
+          description: 'Choose your own GitHub username and a NEW repository named rhdh-vm-<vmName> (e.g. rhdh-vm-alice-rhel9-01).'
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+            requestUserCredentials:
+              secretsKey: USER_OAUTH_TOKEN
+              additionalScopes:
+                github:
+                  - repo
+  steps:
+    - id: render
+      name: Generate VM and catalog manifests
+      action: fetch:template
+      input:
+        url: ./skeleton
+        targetPath: ./generated-vm
+        values:
+          vmName: ${{ parameters.vmName }}
+          sshPublicKey: ${{ parameters.sshPublicKey }}
+          requestedBy: ${{ user.ref }}
+    - id: publish
+      name: Publish the VM to your personal GitHub repository
+      action: publish:github
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        token: ${{ secrets.USER_OAUTH_TOKEN }}
+        description: 'OpenShift Virtualization VM: ${{ parameters.vmName }}'
+        repoVisibility: public
+        defaultBranch: main
+        sourcePath: ./generated-vm
+    - id: registrationFiles
+      name: Prepare an Argo CD registration proposal
+      action: fetch:template
+      input:
+        url: ./registry-skeleton
+        targetPath: ./registry-files
+        values:
+          vmName: ${{ parameters.vmName }}
+          repoURL: ${{ steps.publish.output.remoteUrl }}
+          requestedBy: ${{ user.ref }}
+    - id: registrationPr
+      name: Request approval to deploy the VM
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com?repo=rhdh-vm-registry&owner=benjphipps
+        branchName: request/vm-${{ parameters.vmName }}
+        targetBranchName: main
+        sourcePath: ./registry-files
+        targetPath: registrations/${{ parameters.vmName }}
+        title: 'Approve VM deployment: ${{ parameters.vmName }}'
+        description: 'Verify repo owner and prefix, requestedBy, VM manifests, quota availability, and that this VM name is unique. Merging registers the repository for auto-sync.'
+        commitMessage: 'register VM: ${{ parameters.vmName }}'
+  output:
+    links:
+      - title: View your VM GitHub repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Review VM registration request
+        url: ${{ steps.registrationPr.output.remoteUrl }}
+      - title: Open the registry
+        url: https://github.com/benjphipps/rhdh-vm-registry

@@ -1,0 +1,64 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ${{ values.vmName }}
+  namespace: demo-vms
+  annotations:
+    rhdh.io/requested-by: '${{ values.requestedBy }}'
+  labels:
+    app.kubernetes.io/name: ${{ values.vmName }}
+    backstage.io/kubernetes-id: ${{ values.vmName }}
+spec:
+  runStrategy: Always
+  dataVolumeTemplates:
+    - metadata:
+        name: ${{ values.vmName }}-rootdisk
+      spec:
+        sourceRef:
+          kind: DataSource
+          name: rhel9
+          namespace: openshift-virtualization-os-images
+        storage:
+          resources:
+            requests:
+              storage: 30Gi
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ${{ values.vmName }}
+        backstage.io/kubernetes-id: ${{ values.vmName }}
+    spec:
+      terminationGracePeriodSeconds: 180
+      domain:
+        cpu:
+          cores: 2
+        memory:
+          guest: 4Gi
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              cdrom:
+                bus: sata
+          interfaces:
+            - name: default
+              masquerade: {}
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: rootdisk
+          dataVolume:
+            name: ${{ values.vmName }}-rootdisk
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              users:
+                - name: cloud-user
+                  groups: wheel
+                  sudo: ALL=(ALL) NOPASSWD:ALL
+                  ssh_authorized_keys:
+                    - ${{ values.sshPublicKey }}

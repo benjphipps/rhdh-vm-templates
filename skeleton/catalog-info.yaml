@@ -1,0 +1,15 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.vmName }}
+  description: RHEL 9 VM provisioned by ${{ values.requestedBy }}
+  annotations:
+    argocd/app-name: vm-${{ values.vmName }}
+    argocd/instance-name: openshift-gitops
+    backstage.io/kubernetes-id: ${{ values.vmName }}
+    backstage.io/kubernetes-namespace: demo-vms
+    rhdh.io/requested-by: '${{ values.requestedBy }}'
+spec:
+  type: resource
+  lifecycle: experimental
+  owner: '${{ values.requestedBy }}'

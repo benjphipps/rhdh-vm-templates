@@ -1,0 +1,3 @@
+vmName: ${{ values.vmName }}
+repoURL: '${{ values.repoURL }}'
+requestedBy: '${{ values.requestedBy }}'
