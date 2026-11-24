@@ -24,11 +24,14 @@ spec:
         repoUrl:
           title: Your new VM GitHub repository
           type: string
-          description: 'Choose your own GitHub username and a NEW repository named rhdh-vm-<vmName> (e.g. rhdh-vm-alice-rhel9-01).'
+          description: 'Choose your own GitHub username and a NEW repository'
           ui:field: RepoUrlPicker
           ui:options:
             allowedHosts:
               - github.com
+            repoLabel: New repository name
+            repoDescription: Enter a repository name that does not already exist
+            disableRepoAutocomplete: true
             requestUserCredentials:
               secretsKey: USER_OAUTH_TOKEN
               additionalScopes:
