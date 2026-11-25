@@ -24,7 +24,7 @@ spec:
         repoUrl:
           title: Your new VM GitHub repository
           type: string
-          description: 'Choose your own GitHub username and a new repository (repo name must follow *-vm* naming convention)'
+          description: 'Choose your own GitHub username and a new repository (repo name must follow ...-vm... naming convention)'
           ui:field: RepoUrlPicker
           ui:options:
             allowedHosts:
