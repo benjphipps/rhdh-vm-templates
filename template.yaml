@@ -58,12 +58,12 @@ spec:
         repoVisibility: public
         defaultBranch: main
         sourcePath: ./generated-vm
-    - id: register
-      name: Register VM in Developer Hub Catalog
-      action: catalog:register
-      input:
-        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
-        catalogInfoPath: /catalog-info.yaml
+    #- id: register
+     # name: Register VM in Developer Hub Catalog
+      #action: catalog:register
+      #input:
+       # repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        #catalogInfoPath: /catalog-info.yaml
     - id: registrationFiles
       name: Prepare an Argo CD registration proposal
       action: fetch:template
@@ -94,6 +94,6 @@ spec:
         url: ${{ steps.registrationPr.output.remoteUrl }}
       - title: Open the registry
         url: https://github.com/benjphipps/rhdh-vm-registry
-      - title: View VM in Developer Hub
-        icon: catalog
-        entityRef: ${{ steps.register.output.entityRef }}
+      #- title: View VM in Developer Hub
+       # icon: catalog
+        #entityRef: ${{ steps.register.output.entityRef }}
